@@ -27,9 +27,9 @@ const DayCell = ({
   onDragOver,
 }: DayCellProps) => {
 
-  const { dragSelection, tasks } = useTaskContext();
+  const { dragSelection, filteredTasks } = useTaskContext();
 
-  const dayTasks = tasks.filter(task => {
+  const dayTasks = filteredTasks.filter(task => {
     return isSameDay(task.startDate, day.date) || 
            (task.startDate <= day.date && task.endDate >= day.date);
   });

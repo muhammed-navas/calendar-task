@@ -41,6 +41,11 @@ const Calendar: React.FC = () => {
         setCurrentMonth(nextMonth);
       };
 
+      const handleToday = () => {
+        const today = new Date();
+        setCurrentMonth(new Date(today.getFullYear(), today.getMonth(), 1));
+      };
+
       const handleMouseDown = (date: Date) => {
         if (!isDragging) {
           setIsDragging(true);
@@ -156,8 +161,12 @@ const Calendar: React.FC = () => {
 
   return (
     <div className="h-full">
-      <CalendarHeader currentMonth={currentMonth} onPrevMonth={handlePrevMonth}
-        onNextMonth={handleNextMonth} />
+      <CalendarHeader 
+        currentMonth={currentMonth} 
+        onPrevMonth={handlePrevMonth}
+        onNextMonth={handleNextMonth} 
+        onToday={handleToday}
+      />
       
       <CalendarGrid   
         days={days}

@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer, useEffect, type ReactNode } from 'react';
-import type { DragSelection, Task, TaskContextType } from '../types';
+import type { DragSelection, Task, TaskContextType, TaskCategory, FilterState } from '../types';
 
 type TaskAction =
   | { type: 'ADD_TASK'; payload: Omit<Task, 'id' | 'createdAt'> }
@@ -10,12 +10,16 @@ type TaskAction =
   | { type: 'UPDATE_TASK'; payload: { id: string; updates: Partial<Task> } }
   | { type: 'DELETE_TASK'; payload: string }
   | { type: 'LOAD_TASKS'; payload: Task[] }
+  | { type: 'SET_CATEGORY_FILTER'; payload: { category: TaskCategory; checked: boolean } }
+  | { type: 'SET_TIME_FILTER'; payload: string | null }
+  | { type: 'SET_SEARCH_QUERY'; payload: string }
 
 
 interface TaskState {
     tasks: Task[];
     currentMonth: Date;
     dragSelection: DragSelection;
+    filters: FilterState;
 }
 
 
@@ -55,6 +59,16 @@ const initialState: TaskState = {
         startDate: null,
         endDate: null,
         selectedDates: []
+    },
+    filters: {
+        categories: {
+            'To Do': true,
+            'In Progress': true,
+            'Review': true,
+            'Completed': true
+        },
+        timeRange: null,
+        searchQuery: ''
     }
 };
 
@@ -150,6 +164,33 @@ const taskReducer = (state: TaskState, action: TaskAction): TaskState => {
                 ...state,
                 currentMonth: action.payload
             };
+        case 'SET_CATEGORY_FILTER':
+            return {
+                ...state,
+                filters: {
+                    ...state.filters,
+                    categories: {
+                        ...state.filters.categories,
+                        [action.payload.category]: action.payload.checked
+                    }
+                }
+            };
+        case 'SET_TIME_FILTER':
+            return {
+                ...state,
+                filters: {
+                    ...state.filters,
+                    timeRange: action.payload
+                }
+            };
+        case 'SET_SEARCH_QUERY':
+            return {
+                ...state,
+                filters: {
+                    ...state.filters,
+                    searchQuery: action.payload
+                }
+            };
         default:
             return state;
     }
@@ -187,9 +228,51 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
         dispatch({ type: 'DELETE_TASK', payload: id });
     };
 
+    const setCategoryFilter = (category: TaskCategory, checked: boolean) => {
+        dispatch({ type: 'SET_CATEGORY_FILTER', payload: { category, checked } });
+    };
+
+    const setTimeFilter = (timeRange: string | null) => {
+        dispatch({ type: 'SET_TIME_FILTER', payload: timeRange });
+    };
+
+    const setSearchQuery = (query: string) => {
+        dispatch({ type: 'SET_SEARCH_QUERY', payload: query });
+    };
+
+    const getFilteredTasks = (): Task[] => {
+        let filtered = state.tasks;
+
+        // Filter by categories
+        filtered = filtered.filter(task => state.filters.categories[task.category]);
+
+        // Filter by search query
+        if (state.filters.searchQuery.trim()) {
+            const query = state.filters.searchQuery.toLowerCase();
+            filtered = filtered.filter(task => 
+                task.title.toLowerCase().includes(query)
+            );
+        }
+
+        // Filter by time range
+        if (state.filters.timeRange) {
+            const now = new Date();
+            const weeks = parseInt(state.filters.timeRange);
+            const futureDate = new Date(now.getTime() + (weeks * 7 * 24 * 60 * 60 * 1000));
+            
+            filtered = filtered.filter(task => 
+                task.startDate >= now && task.startDate <= futureDate
+            );
+        }
+
+        return filtered;
+    };
+
     const value: TaskContextType = {
         currentMonth: state.currentMonth,
         tasks: state.tasks,
+        filteredTasks: getFilteredTasks(),
+        filters: state.filters,
         dragSelection: state.dragSelection,
         setCurrentMonth,
         addTask,
@@ -197,6 +280,9 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
         startDragSelection,
         updateTask,
         deleteTask,
+        setCategoryFilter,
+        setTimeFilter,
+        setSearchQuery,
         clearDragSelection
     };
 

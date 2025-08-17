@@ -66,7 +66,7 @@ const Task: React.FC<TaskProps> = ({ task, onEdit, onDelete, onDragStart }) => {
           >
             <MoreVertical size={14} />
           </button>
-          
+
           {showActions && (
             <div className="absolute right-0 top-8 bg-white rounded-lg shadow-lg border py-1 z-10 min-w-32">
               <button
@@ -87,7 +87,7 @@ const Task: React.FC<TaskProps> = ({ task, onEdit, onDelete, onDragStart }) => {
           )}
         </div>
       </div>
-      
+
       <div className="text-xs opacity-90 mt-1">
         {task.category}
       </div>

@@ -2,7 +2,14 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getMonthName } from "../../utils/dateUtils";
 
 
-const CalendarHeader = ({  currentMonth, onPrevMonth,onNextMonth}: { currentMonth: Date, onPrevMonth: () => void, onNextMonth: () => void }) => {
+interface CalendarHeaderProps {
+  currentMonth: Date;
+  onPrevMonth: () => void;
+  onNextMonth: () => void;
+  onToday: () => void;
+}
+
+const CalendarHeader: React.FC<CalendarHeaderProps> = ({ currentMonth, onPrevMonth, onNextMonth, onToday }) => {
     return (
         <div className="flex items-center justify-between mb-6">
             <h1 className="text-3xl font-bold text-gray-800">
@@ -18,11 +25,7 @@ const CalendarHeader = ({  currentMonth, onPrevMonth,onNextMonth}: { currentMont
                 </button>
 
                 <button
-                 onClick={() => {
-                    const today = new Date();
-                    if (currentMonth.getMonth() !== today.getMonth() || currentMonth.getFullYear() !== today.getFullYear()) {
-                    }
-                  }}
+                    onClick={onToday}
                     className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                     Today
