@@ -16,6 +16,7 @@ const Calendar: React.FC = () => {
         startDragSelection,
         updateTask,
         addTask,
+        deleteTask,
         clearDragSelection
       } = useTaskContext();
 
@@ -23,6 +24,7 @@ const Calendar: React.FC = () => {
       const [isDragging, setIsDragging] = useState(false)
       const [isModalOpen, setIsModalOpen] = useState(false);
       const [editingTask, setEditingTask] = useState<Task | null>(null);
+      const [draggedTask, setDraggedTask] = useState<Task | null>(null);
 
       useEffect(() => {
         setDays(getDaysInMonth(currentMonth));
@@ -52,11 +54,11 @@ const Calendar: React.FC = () => {
         }
       };
     
-      const handleMouseUp = (e:any) => {
+      const handleMouseUp = (e: React.MouseEvent) => {
         if (isDragging && dragSelection.selectedDates.length > 0) {
           setIsDragging(false);
           setIsModalOpen(true);
-          e.stopePropagation()
+          e.stopPropagation();
         } else {
           setIsDragging(false);
           clearDragSelection();
@@ -96,15 +98,77 @@ const Calendar: React.FC = () => {
         clearDragSelection();
       };
 
+      const handleTaskEdit = (task: Task) => {
+        setEditingTask(task);
+        // Set the drag selection to match the task's date range
+        const selectedDates: Date[] = [];
+        const currentDate = new Date(task.startDate);
+        const endDate = new Date(task.endDate);
+        
+        while (currentDate <= endDate) {
+          selectedDates.push(new Date(currentDate));
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        // Update drag selection state manually
+        startDragSelection(task.startDate);
+        updateDragSelection(task.endDate);
+        setIsModalOpen(true);
+      };
+
+      const handleTaskDelete = (taskId: string) => {
+        deleteTask(taskId);
+      };
+
+      const handleTaskDragStart = (e: React.DragEvent, task: Task) => {
+        setDraggedTask(task);
+        e.dataTransfer.setData('text/plain', JSON.stringify({
+          type: 'task',
+          taskId: task.id
+        }));
+      };
+
+      const handleDrop = (e: React.DragEvent, targetDate: Date) => {
+        e.preventDefault();
+        
+        if (draggedTask) {
+          // Calculate the duration of the task
+          const taskDuration = Math.ceil((draggedTask.endDate.getTime() - draggedTask.startDate.getTime()) / (1000 * 60 * 60 * 24));
+          
+          // Set new start date to the drop target
+          const newStartDate = new Date(targetDate);
+          const newEndDate = new Date(targetDate);
+          newEndDate.setDate(newEndDate.getDate() + taskDuration);
+          
+          // Update the task with new dates
+          updateTask(draggedTask.id, {
+            startDate: newStartDate,
+            endDate: newEndDate
+          });
+          
+          setDraggedTask(null);
+        }
+      };
+
+      const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+      };
+
   return (
     <div className="h-full">
       <CalendarHeader currentMonth={currentMonth} onPrevMonth={handlePrevMonth}
         onNextMonth={handleNextMonth} />
       
-      <CalendarGrid   days={days}
+      <CalendarGrid   
+        days={days}
         onMouseDown={handleMouseDown}
         onMouseEnter={handleMouseEnter}
         onMouseUp={handleMouseUp}
+        onTaskEdit={handleTaskEdit}
+        onTaskDelete={handleTaskDelete}
+        onTaskDragStart={handleTaskDragStart}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
          />
 
 <TaskModal

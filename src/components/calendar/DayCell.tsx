@@ -1,22 +1,31 @@
 import { useTaskContext } from '../../context/TaskContext';
-import type { CalendarDay } from '../../types';
+import type { CalendarDay, Task as TaskType } from '../../types';
 import { isSameDay } from '../../utils/dateUtils';
 import Task from '../task/Task';
-
 
 interface DayCellProps {
   day: CalendarDay;
   onMouseDown: (date: Date) => void;
   onMouseEnter: (date: Date) => void;
   onMouseUp: (e: React.MouseEvent) => void;
+  onTaskEdit: (task: TaskType) => void;
+  onTaskDelete: (taskId: string) => void;
+  onTaskDragStart: (e: React.DragEvent, task: TaskType) => void;
+  onDrop: (e: React.DragEvent, date: Date) => void;
+  onDragOver: (e: React.DragEvent) => void;
 }
 
-const DayCell= ({
+const DayCell = ({
   day,
   onMouseDown,
   onMouseEnter,
   onMouseUp,
-}:DayCellProps) => {
+  onTaskEdit,
+  onTaskDelete,
+  onTaskDragStart,
+  onDrop,
+  onDragOver,
+}: DayCellProps) => {
 
   const { dragSelection, tasks } = useTaskContext();
 
@@ -27,19 +36,14 @@ const DayCell= ({
 
   const isSelected = dragSelection.selectedDates.some(date => isSameDay(date, day.date));
 
-  const handleTaskEdit = (task: any) => {
-    // This will be handled by the parent component
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    onDrop(e, day.date);
   };
 
-  const handleTaskDelete = (taskId: string) => {
-    // This will be handled by the parent component
-  };
-
-  const handleTaskDragStart = (e: React.DragEvent, task: any) => {
-    e.dataTransfer.setData('text/plain', JSON.stringify({
-      type: 'task',
-      taskId: task.id
-    }));
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    onDragOver(e);
   };
 
   return (
@@ -60,6 +64,8 @@ const DayCell= ({
       onMouseDown={() => onMouseDown(day.date)}
       onMouseEnter={() => onMouseEnter(day.date)}
       onMouseUp={(e) => onMouseUp(e)}
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
     >
       <div className="flex justify-between items-start mb-1">
         <span className={`text-sm font-medium ${
@@ -74,9 +80,9 @@ const DayCell= ({
           <Task
             key={task.id}
             task={task}
-            onEdit={handleTaskEdit}
-            onDelete={handleTaskDelete}
-            onDragStart={handleTaskDragStart}
+            onEdit={onTaskEdit}
+            onDelete={onTaskDelete}
+            onDragStart={onTaskDragStart}
           />
         ))}
       </div>

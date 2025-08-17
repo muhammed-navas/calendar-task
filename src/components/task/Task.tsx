@@ -32,6 +32,11 @@ const Task: React.FC<TaskProps> = ({ task, onEdit, onDelete, onDragStart }) => {
     setShowActions(!showActions);
   };
 
+  const handleTaskClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEdit(task);
+  };
+
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
     onEdit(task);
@@ -46,11 +51,11 @@ const Task: React.FC<TaskProps> = ({ task, onEdit, onDelete, onDragStart }) => {
 
   return (
     <div
-      className={`relative px-3 py-2 rounded-md text-white text-sm cursor-move select-none shadow-sm hover:shadow-md transition-all ${getCategoryColor(task.category)}`}
+      className={`relative px-3 py-2 rounded-md text-white text-sm cursor-pointer select-none shadow-sm hover:shadow-md transition-all ${getCategoryColor(task.category)}`}
       draggable
       onDragStart={(e) => onDragStart(e, task)}
       onMouseLeave={() => setShowActions(false)}
-      onClick={(e) => e.stopPropagation()}
+      onClick={handleTaskClick}
     >
       <div className="flex items-center justify-between">
         <span className="font-medium truncate flex-1 pr-2">{task.title}</span>

@@ -32,5 +32,6 @@
     updateDragSelection: (date: Date) => void;
     startDragSelection: (date: Date) => void;
     updateTask: (id: string, updates: Partial<Task>) => void;
+    deleteTask: (id: string) => void;
     clearDragSelection: () => void;
 }

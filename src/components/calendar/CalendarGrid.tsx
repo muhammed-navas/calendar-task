@@ -1,4 +1,4 @@
-import type { CalendarDay } from '../../types';
+import type { CalendarDay, Task } from '../../types';
 import { getWeekDays } from '../../utils/dateUtils';
 import DayCell from './DayCell';
 
@@ -7,9 +7,24 @@ interface CalendarGridProps {
   onMouseDown: (date: Date) => void;
   onMouseEnter: (date: Date) => void;
   onMouseUp: (e: React.MouseEvent) => void;
+  onTaskEdit: (task: Task) => void;
+  onTaskDelete: (taskId: string) => void;
+  onTaskDragStart: (e: React.DragEvent, task: Task) => void;
+  onDrop: (e: React.DragEvent, date: Date) => void;
+  onDragOver: (e: React.DragEvent) => void;
 }
 
-const CalendarGrid = ({days, onMouseEnter, onMouseDown, onMouseUp}:CalendarGridProps) => {
+const CalendarGrid = ({
+  days, 
+  onMouseEnter, 
+  onMouseDown, 
+  onMouseUp, 
+  onTaskEdit, 
+  onTaskDelete, 
+  onTaskDragStart, 
+  onDrop, 
+  onDragOver
+}: CalendarGridProps) => {
   const weekDays = getWeekDays();
 
   return (
@@ -32,6 +47,11 @@ const CalendarGrid = ({days, onMouseEnter, onMouseDown, onMouseUp}:CalendarGridP
             onMouseDown={onMouseDown}
             onMouseEnter={onMouseEnter}
             onMouseUp={onMouseUp}
+            onTaskEdit={onTaskEdit}
+            onTaskDelete={onTaskDelete}
+            onTaskDragStart={onTaskDragStart}
+            onDrop={onDrop}
+            onDragOver={onDragOver}
           />
         ))}
       </div>

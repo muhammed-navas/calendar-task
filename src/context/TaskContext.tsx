@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, type ReactNode } from 'react';
+import { createContext, useContext, useReducer, useEffect, type ReactNode } from 'react';
 import type { DragSelection, Task, TaskContextType } from '../types';
 
 type TaskAction =
@@ -8,6 +8,8 @@ type TaskAction =
   | { type: 'UPDATE_DRAG_SELECTION'; payload: Date }
   | { type: 'CLEAR_DRAG_SELECTION' }
   | { type: 'UPDATE_TASK'; payload: { id: string; updates: Partial<Task> } }
+  | { type: 'DELETE_TASK'; payload: string }
+  | { type: 'LOAD_TASKS'; payload: Task[] }
 
 
 interface TaskState {
@@ -17,8 +19,36 @@ interface TaskState {
 }
 
 
+const STORAGE_KEY = 'calendar-tasks';
+
+const loadTasksFromStorage = (): Task[] => {
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            const tasks = JSON.parse(stored);
+            return tasks.map((task: any) => ({
+                ...task,
+                startDate: new Date(task.startDate),
+                endDate: new Date(task.endDate),
+                createdAt: new Date(task.createdAt)
+            }));
+        }
+    } catch (error) {
+        console.error('Error loading tasks from localStorage:', error);
+    }
+    return [];
+};
+
+const saveTasksToStorage = (tasks: Task[]) => {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    } catch (error) {
+        console.error('Error saving tasks to localStorage:', error);
+    }
+};
+
 const initialState: TaskState = {
-    tasks: [],
+    tasks: loadTasksFromStorage(),
     currentMonth: new Date(),
     dragSelection: {
         isSelecting: false,
@@ -34,25 +64,41 @@ const generateId = (): string => {
 
 const taskReducer = (state: TaskState, action: TaskAction): TaskState => {
     switch (action.type) {
+        case 'LOAD_TASKS':
+            return {
+                ...state,
+                tasks: action.payload
+            };
         case 'ADD_TASK':
             const newTask: Task = {
                 ...action.payload,
                 id: generateId(),
                 createdAt: new Date()
             };
+            const newTasks = [...state.tasks, newTask];
+            saveTasksToStorage(newTasks);
             return {
                 ...state,
-                tasks: [...state.tasks, newTask]
+                tasks: newTasks
             };
-            case 'UPDATE_TASK':
-                return {
-                  ...state,
-                  tasks: state.tasks.map(task =>
-                    task.id === action.payload.id
-                      ? { ...task, ...action.payload.updates }
-                      : task
-                  )
-                };
+        case 'UPDATE_TASK':
+            const updatedTasks = state.tasks.map(task =>
+                task.id === action.payload.id
+                    ? { ...task, ...action.payload.updates }
+                    : task
+            );
+            saveTasksToStorage(updatedTasks);
+            return {
+                ...state,
+                tasks: updatedTasks
+            };
+        case 'DELETE_TASK':
+            const filteredTasks = state.tasks.filter(task => task.id !== action.payload);
+            saveTasksToStorage(filteredTasks);
+            return {
+                ...state,
+                tasks: filteredTasks
+            };
         case 'START_DRAG_SELECTION':
             return {
                 ...state,
@@ -137,6 +183,10 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
         dispatch({ type: 'CLEAR_DRAG_SELECTION' });
     };
 
+    const deleteTask = (id: string) => {
+        dispatch({ type: 'DELETE_TASK', payload: id });
+    };
+
     const value: TaskContextType = {
         currentMonth: state.currentMonth,
         tasks: state.tasks,
@@ -146,6 +196,7 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
         updateDragSelection,
         startDragSelection,
         updateTask,
+        deleteTask,
         clearDragSelection
     };
 
