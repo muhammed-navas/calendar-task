@@ -2,11 +2,18 @@ import type { CalendarDay } from '../../types';
 import { getWeekDays } from '../../utils/dateUtils';
 import DayCell from './DayCell';
 
-const CalendarGrid = ({days}: {days: CalendarDay[]}) => {
+interface CalendarGridProps {
+  days: CalendarDay[];
+  onMouseDown: (date: Date) => void;
+  onMouseEnter: (date: Date) => void;
+  onMouseUp: (e: React.MouseEvent) => void;
+}
+
+const CalendarGrid = ({days, onMouseEnter, onMouseDown, onMouseUp}:CalendarGridProps) => {
   const weekDays = getWeekDays();
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div className="bg-white  rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <div className="grid grid-cols-7 bg-gray-50">
         {weekDays.map((day) => (
           <div
@@ -22,6 +29,9 @@ const CalendarGrid = ({days}: {days: CalendarDay[]}) => {
           <DayCell
             key={index}
             day={day}
+            onMouseDown={onMouseDown}
+            onMouseEnter={onMouseEnter}
+            onMouseUp={onMouseUp}
           />
         ))}
       </div>

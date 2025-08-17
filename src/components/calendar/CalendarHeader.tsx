@@ -21,7 +21,6 @@ const CalendarHeader = ({  currentMonth, onPrevMonth,onNextMonth}: { currentMont
                  onClick={() => {
                     const today = new Date();
                     if (currentMonth.getMonth() !== today.getMonth() || currentMonth.getFullYear() !== today.getFullYear()) {
-                      // This will be handled by parent to navigate to current month
                     }
                   }}
                     className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
