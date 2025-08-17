@@ -2,17 +2,17 @@ import { createContext, useContext, useReducer, useEffect, type ReactNode } from
 import type { DragSelection, Task, TaskContextType, TaskCategory, FilterState } from '../types';
 
 type TaskAction =
-  | { type: 'ADD_TASK'; payload: Omit<Task, 'id' | 'createdAt'> }
-  | { type: 'SET_CURRENT_MONTH'; payload: Date }
-  | { type: 'START_DRAG_SELECTION'; payload: Date }
-  | { type: 'UPDATE_DRAG_SELECTION'; payload: Date }
-  | { type: 'CLEAR_DRAG_SELECTION' }
-  | { type: 'UPDATE_TASK'; payload: { id: string; updates: Partial<Task> } }
-  | { type: 'DELETE_TASK'; payload: string }
-  | { type: 'LOAD_TASKS'; payload: Task[] }
-  | { type: 'SET_CATEGORY_FILTER'; payload: { category: TaskCategory; checked: boolean } }
-  | { type: 'SET_TIME_FILTER'; payload: string | null }
-  | { type: 'SET_SEARCH_QUERY'; payload: string }
+    | { type: 'ADD_TASK'; payload: Omit<Task, 'id' | 'createdAt'> }
+    | { type: 'SET_CURRENT_MONTH'; payload: Date }
+    | { type: 'START_DRAG_SELECTION'; payload: Date }
+    | { type: 'UPDATE_DRAG_SELECTION'; payload: Date }
+    | { type: 'CLEAR_DRAG_SELECTION' }
+    | { type: 'UPDATE_TASK'; payload: { id: string; updates: Partial<Task> } }
+    | { type: 'DELETE_TASK'; payload: string }
+    | { type: 'LOAD_TASKS'; payload: Task[] }
+    | { type: 'SET_CATEGORY_FILTER'; payload: { category: TaskCategory; checked: boolean } }
+    | { type: 'SET_TIME_FILTER'; payload: string | null }
+    | { type: 'SET_SEARCH_QUERY'; payload: string }
 
 
 interface TaskState {
@@ -127,20 +127,20 @@ const taskReducer = (state: TaskState, action: TaskAction): TaskState => {
             if (!state.dragSelection.isSelecting || !state.dragSelection.startDate) {
                 return state;
             }
-            
+
             const startDate = state.dragSelection.startDate;
             const endDate = action.payload;
             const selectedDates: Date[] = [];
-            
+
             // Generate all dates between start and end (inclusive)
             const currentDate = new Date(startDate);
             const lastDate = new Date(endDate);
-            
+
             while (currentDate <= lastDate) {
                 selectedDates.push(new Date(currentDate));
                 currentDate.setDate(currentDate.getDate() + 1);
             }
-            
+
             return {
                 ...state,
                 dragSelection: {
@@ -214,11 +214,11 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
     };
     const startDragSelection = (date: Date) => {
         dispatch({ type: 'START_DRAG_SELECTION', payload: date });
-      };
+    };
 
-      const updateTask = (id: string, updates: Partial<Task>) => {
+    const updateTask = (id: string, updates: Partial<Task>) => {
         dispatch({ type: 'UPDATE_TASK', payload: { id, updates } });
-      };
+    };
 
     const clearDragSelection = () => {
         dispatch({ type: 'CLEAR_DRAG_SELECTION' });
@@ -249,7 +249,7 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
         // Filter by search query
         if (state.filters.searchQuery.trim()) {
             const query = state.filters.searchQuery.toLowerCase();
-            filtered = filtered.filter(task => 
+            filtered = filtered.filter(task =>
                 task.title.toLowerCase().includes(query)
             );
         }
@@ -259,8 +259,8 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
             const now = new Date();
             const weeks = parseInt(state.filters.timeRange);
             const futureDate = new Date(now.getTime() + (weeks * 7 * 24 * 60 * 60 * 1000));
-            
-            filtered = filtered.filter(task => 
+
+            filtered = filtered.filter(task =>
                 task.startDate >= now && task.startDate <= futureDate
             );
         }
